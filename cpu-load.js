@@ -55,6 +55,7 @@ var showCpuUsage = function(){
 
 		_(cpusLen).times(function(core){
 
+			// http://stackoverflow.com/questions/3017162/how-to-get-total-cpu-usage-in-linux-c/3017438#3017438
 			var work_over_period = usageBuffer[1][core]['work'] - usageBuffer[0][core]['work'];
 
 			var total_over_period = usageBuffer[1][core]['total']  - usageBuffer[0][core]['total'];
