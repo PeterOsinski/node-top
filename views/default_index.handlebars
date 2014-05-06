@@ -1,0 +1,34 @@
+
+  {{#each cpus}}
+    {{model}}, speed: {{speed}}mhz
+    <canvas class="js-core-chart" id="core_{{@index}}" width="1800px" height="30"></canvas>
+    <br/>
+  {{/each}}
+
+
+
+    <script>
+
+      var opts = {maxValue:100,minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}};
+
+      $('.js-core-chart').each(function(key, el){
+
+        window['CORE_S_'+key] = new SmoothieChart(opts);
+
+        window['CORE_S_'+key].streamTo(el, 500);
+        // Data
+        window['CORE_L_'+key] = new TimeSeries();
+        // Add to SmoothieChart
+        window['CORE_S_'+key].addTimeSeries(window['CORE_L_'+key]);
+
+      });
+
+      socket.on('cpu-load', function (data) {
+
+        _.each(data, function(core, key){
+
+          window['CORE_L_'+key].append(new Date().getTime(), core);
+
+        })
+      });
+    </script>

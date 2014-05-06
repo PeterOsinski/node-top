@@ -3,19 +3,8 @@ var _ 			= require('underscore');
 var sys 		= require('sys');
 var exec 		= require('child_process').exec;
 
-/*
-
-A better indicator is the load average, if I simplify, it is the amount of waiting tasks because of insufficient resources.
-
-You can access it in the uptime command, for example: 13:05:31 up 6 days, 22:54,  5 users,  load average: 0.01, 0.04, 0.06. 
-The 3 numbers at the end are the load averages for the last minute, the last 5 minutes and the last 15 minutes. 
-If it reaches 1.00, (no matter of the number of cores) it is that something it waiting.
- */
-console.log(os.loadavg());
-
-
+var cpusLen 	= os.cpus().length;
 var usageBuffer = [];
-var cpusLen = os.cpus().length;
 
 var parseProcStat = function(data){
 	var cores = data.split("\n").slice(0, cpusLen + 1);
@@ -65,18 +54,36 @@ var showCpuUsage = function(){
 			usage.push(parseFloat(cpu).toFixed(1));
 		})
 
-		console.log(usage.join('  '));
+		return usage;
 	}
 }
 
-setInterval(function(){
+var CPU_LOAD_INTERVAL;
+exports.startLogging = function(interval, cb) {
 
-	exec("cat /proc/stat", function(error, stdout, stderr) { 
-	
-		parseProcStat(stdout);
+	console.log('start measuring cpu load');
 
-	});
-	
-	showCpuUsage();
-	
-}, 500)
+    CPU_LOAD_INTERVAL = setInterval(function() {
+
+        exec("cat /proc/stat", function(error, stdout, stderr) {
+
+            parseProcStat(stdout);
+
+        });
+
+        cb(showCpuUsage());
+
+    }, interval || 500);
+}
+
+exports.stopLogging = function() {
+
+	console.log('stop measuring cpu load...');
+
+    clearInterval(CPU_LOAD_INTERVAL);
+    
+}
+
+exports.resetUsageData = function() {
+    usageBuffer = [];
+}
