@@ -1,7 +1,8 @@
 
   {{#each cpus}}
-    {{model}}, speed: {{speed}}mhz
-    <canvas class="js-core-chart" id="core_{{@index}}" width="1800px" height="30"></canvas>
+    {{model}}, speed: <span id="core_{{@index}}_speed"></span>mhz
+    <canvas class="js-core-load" id="core_load_{{@index}}" width="1000px" height="30"></canvas>
+    <canvas class="js-core-speed" id="core_speed_{{@index}}" width="1000px" height="30"></canvas>
     <br/>
   {{/each}}
 
@@ -9,25 +10,40 @@
 
     <script>
 
-      var opts = {maxValue:100,minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}};
+      var opts = {maxValue: 100, minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}};
 
-      $('.js-core-chart').each(function(key, el){
+      var optsSpeed = {minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}, interpolation:'step'};
 
-        window['CORE_S_'+key] = new SmoothieChart(opts);
+      $('.js-core-load').each(function(key, el){
 
-        window['CORE_S_'+key].streamTo(el, 500);
-        // Data
-        window['CORE_L_'+key] = new TimeSeries();
-        // Add to SmoothieChart
-        window['CORE_S_'+key].addTimeSeries(window['CORE_L_'+key]);
+        window['CORE_CHART_'+key] = new SmoothieChart(opts);
 
+        window['CORE_CHART_'+key].streamTo(el, 500);
+
+        window['CORE_LOAD_'+key] = new TimeSeries();
+
+        window['CORE_CHART_'+key].addTimeSeries(window['CORE_LOAD_'+key]);
+
+      });
+
+      $('.js-core-speed').each(function(key, el){
+        window['CORE_CHART_SPEED_'+key] = new SmoothieChart(optsSpeed);
+
+        window['CORE_CHART_SPEED_'+key].streamTo(el, 500);
+
+        window['CORE_SPEED_'+key] = new TimeSeries();
+
+        window['CORE_CHART_SPEED_'+key].addTimeSeries(window['CORE_SPEED_'+key]);
       });
 
       socket.on('cpu-load', function (data) {
 
         _.each(data, function(core, key){
 
-          window['CORE_L_'+key].append(new Date().getTime(), core);
+          $('#core_'+key+'_speed').text(core.speed);
+
+          window['CORE_LOAD_'+key].append(new Date().getTime(), core.load);
+          window['CORE_SPEED_'+key].append(new Date().getTime(), core.speed);
 
         })
       });

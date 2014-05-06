@@ -1,38 +1,40 @@
-var os = require('os');
+var os 		= require('os');
+var sys 	= require('sys');
+var exec	= require('child_process').exec;
+var _ = require('underscore');
 
-var OVERALL_INFO_INTERVAL;
-exports.startLogging = function(interval, cb){
+exports.getInfo = function(){
         /*
 			A better indicator is the load average, if I simplify, it is the amount of waiting tasks because of insufficient resources.
 			You can access it in the uptime command, for example: 13:05:31 up 6 days, 22:54,  5 users,  load average: 0.01, 0.04, 0.06. 
 			The 3 numbers at the end are the load averages for the last minute, the last 5 minutes and the last 15 minutes. 
 			If it reaches 1.00, (no matter of the number of cores) it is that something it waiting.
 		*/
-	
+	exec("free -m | tail -n 3", function(error, stdout, stderr) {
 
-	console.log('start measuring ovearll info...');
+        var data = stdout.split("\n");
 
-	OVERALL_INFO_INTERVAL = setInterval(function() {
-		
-		cb({
-			'loadavg': os.loadavg(),
-			'uptime': os.uptime(),
-			'freemem': os.freemem(),
-			'totalmem': os.totalmem(),
-			'platform': os.platform()
-		});
+        //total, used, free
+        var mem = data[0].match(/[0-9]{1,}/gi).slice(0,3);
 
-	}, interval || 5000)
+        var cache_buff = data[1].match(/[0-9]{1,}/gi).slice(0,3);
+        //cache buff has no 'total' value
+        cache_buff.unshift(0);
+
+        var swap = data[2].match(/[0-9]{1,}/gi).slice(0,3);
+
+        console.log(mem,cache_buff,swap);
+    });
+
+	return {
+		'loadavg': os.loadavg(),
+		'uptime': os.uptime(),
+		'freemem': os.freemem(),
+		'totalmem': os.totalmem(),
+		'platform': os.platform()
+	};
+
 }
-
-exports.stopLogging = function() {
-
-	console.log('stop measuring ovearll info...');
-
-    clearInterval(OVERALL_INFO_INTERVAL);
-    
-}
-
 
 
 /*

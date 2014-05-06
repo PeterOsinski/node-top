@@ -7,7 +7,8 @@ var cpusLen 	= os.cpus().length;
 var usageBuffer = [];
 
 var parseProcStat = function(data){
-	var cores = data.split("\n").slice(0, cpusLen + 1);
+	var cpus = os.cpus();
+	var cores = data.split("\n").slice(0, cpus.length + 1);
 	var avg = cores.shift();
 
 	var coreUsages = {};
@@ -40,7 +41,9 @@ var showCpuUsage = function(){
 
 	if(usageBuffer.length > 2){
 		usageBuffer.shift();
+
 		var usage = [];
+		var cpus = os.cpus();
 
 		_(cpusLen).times(function(core){
 
@@ -51,37 +54,25 @@ var showCpuUsage = function(){
 
 			var cpu = work_over_period / total_over_period * 100;
 
-			usage.push(parseFloat(cpu).toFixed(1));
+			usage.push({
+				load: parseFloat(cpu).toFixed(1),
+				speed: cpus[core].speed
+			});
 		})
 
 		return usage;
 	}
 }
 
-var CPU_LOAD_INTERVAL;
-exports.startLogging = function(interval, cb) {
+exports.getLoad = function() {
 
-	console.log('start measuring cpu load');
+	exec("cat /proc/stat", function(error, stdout, stderr) {
 
-    CPU_LOAD_INTERVAL = setInterval(function() {
+        parseProcStat(stdout);
 
-        exec("cat /proc/stat", function(error, stdout, stderr) {
+    });
 
-            parseProcStat(stdout);
-
-        });
-
-        cb(showCpuUsage());
-
-    }, interval || 500);
-}
-
-exports.stopLogging = function() {
-
-	console.log('stop measuring cpu load...');
-
-    clearInterval(CPU_LOAD_INTERVAL);
-    
+    return showCpuUsage();
 }
 
 exports.resetUsageData = function() {

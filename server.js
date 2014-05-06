@@ -29,6 +29,7 @@ app.listen(4000, function(){
 var io = require('socket.io').listen(4040);
 
 var conntectedClients = 0;
+var CPU_LOAD_INTERVAL, SYS_INFO_INTERVAL;
 io.sockets.on('connection', function(socket) {
 
     conntectedClients++;
@@ -37,13 +38,12 @@ io.sockets.on('connection', function(socket) {
     //start broadcasting
     if(conntectedClients === 1){
 
-    	cpuLoad.startLogging(500, function(usageData){
-    		io.sockets.emit('cpu-load', usageData);
-    	});
-
-        sysInfo.startLogging(5000, function(info){
-            io.sockets.emit('overall-info', info);
-        });
+        // CPU_LOAD_INTERVAL = setInterval(function(){
+        //     io.sockets.emit('cpu-load', cpuLoad.getLoad());
+        // }, 500)
+        SYS_INFO_INTERVAL = setInterval(function(){
+            io.sockets.emit('overall-info', sysInfo.getInfo());
+        }, 1000)
 
     }
 
@@ -53,8 +53,8 @@ io.sockets.on('connection', function(socket) {
 
         if(conntectedClients === 0){
         	
-        	cpuLoad.stopLogging();
-            sysInfo.stopLogging();
+            clearInterval(CPU_LOAD_INTERVAL);
+            clearInterval(SYS_INFO_INTERVAL);
 
         }
     });
