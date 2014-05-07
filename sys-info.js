@@ -42,6 +42,10 @@ var execDf = function(cb){
 	//df -h
 }
 
+var execPs = function(cb){
+	// ps aux --sort %cpu | tail -n 10
+}
+
 var execFree = function(cb){
 
 /*
