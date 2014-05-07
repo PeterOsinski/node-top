@@ -9,12 +9,12 @@ exports.getInfo = function(callback){
 
     async.parallel({
     	sys: function(cb){
-    		/*
-				A better indicator is the load average, if I simplify, it is the amount of waiting tasks because of insufficient resources.
-				You can access it in the uptime command, for example: 13:05:31 up 6 days, 22:54,  5 users,  load average: 0.01, 0.04, 0.06. 
-				The 3 numbers at the end are the load averages for the last minute, the last 5 minutes and the last 15 minutes. 
-				If it reaches 1.00, (no matter of the number of cores) it is that something it waiting.
-			*/
+    		
+				// A better indicator is the load average, if I simplify, it is the amount of waiting tasks because of insufficient resources.
+				// You can access it in the uptime command, for example: 13:05:31 up 6 days, 22:54,  5 users,  load average: 0.01, 0.04, 0.06. 
+				// The 3 numbers at the end are the load averages for the last minute, the last 5 minutes and the last 15 minutes. 
+				// If it reaches 1.00, (no matter of the number of cores) it is that something it waiting.
+			
     		cb(null, {
     			'loadavg': os.loadavg().map(function(val){
 					return val.toFixed(2);
@@ -32,6 +32,24 @@ exports.getInfo = function(callback){
 
     		})
 
+    	},
+    	ps: function(cb){
+
+    		execPs(function(data){
+
+    			cb(null, data);
+
+    		})
+
+    	},
+    	df: function(cb){
+
+    		execDf(function(data){
+
+    			cb(null, data);
+
+    		})
+
     	}
 	}, function(err, results){
 		callback(results);
@@ -39,11 +57,27 @@ exports.getInfo = function(callback){
 }
 
 var execDf = function(cb){
-	//df -h
+
+	exec('df -h', function(error, stdout, stderr){
+
+		var data = stdout.split("\n");
+		data.shift();
+		cb(data);
+
+	})
+
 }
 
 var execPs = function(cb){
-	// ps aux --sort %cpu | tail -n 10
+	
+	var cmd = 'ps -eo pcpu,pmem,user,pid,command,start,time --sort %cpu | tail -n 10';
+	exec(cmd, function(error, stdout, stderr) {
+
+		//mem, cpu, user, pid, command, start, time
+		cb(stdout.split("\n").reverse());
+
+	});
+
 }
 
 var execFree = function(cb){
@@ -69,11 +103,11 @@ var execFree = function(cb){
 
         var data = stdout.split("\n");
 
-        //structure: total, used, free
+        // //structure: total, used, free
         var mem = data[0].match(/[0-9]{1,}/gi).slice(0,3);
 
         var cache_buff = data[1].match(/[0-9]{1,}/gi).slice(0,3);
-        //cache buff has no 'total' value
+        // //cache buff has no 'total' value
         cache_buff.unshift(0);
 
         var swap = data[2].match(/[0-9]{1,}/gi).slice(0,3);

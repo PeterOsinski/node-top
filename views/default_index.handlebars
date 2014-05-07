@@ -43,11 +43,19 @@
     <br/>
     <br/>
     <br/>
-
+    Average load:<span class="js-loadavg"></span><br/>
+    <br/>
+    Disk space: <span class="js-mem"></span>
+    <br>
+    Processes:<br/>
+    <span class="js-ps"></span>
+    <br/><br/>
     <div id="js-mem-mem" style="width:200px; height:200px; float:left;"></div>
     <div id="js-mem-ram-only" style="width:200px; height:200px; float:left;"></div>
     <div id="js-mem-cache" style="width:200px; height:200px; float:left;"></div>
     <div id="js-mem-swap" style="width:200px; height:200px; float:left;"></div>
+    <br/><br/>
+
 <script>
 
     var memMem, memRamOnly, memSwap, memCache = false;
@@ -100,6 +108,10 @@
       memCache.refresh(data.mem.cachebuff[1]);
       memSwap.refresh(data.mem.swap[1]);
       memMem.refresh(data.mem.mem[1]);
+
+      $('.js-loadavg').text(data.sys.loadavg.join(' '));
+      $('.js-mem').html(data.df.join('<br/>'));
+      $('.js-ps').html(data.ps.join('<br/>'));
 
     });
 
