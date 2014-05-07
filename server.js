@@ -25,7 +25,6 @@ app.listen(4000, function(){
     console.log('Server running...');
 });
 
-// http://justgage.com/
 var io = require('socket.io').listen(4040);
 
 var conntectedClients = 0;
@@ -38,12 +37,27 @@ io.sockets.on('connection', function(socket) {
     //start broadcasting
     if(conntectedClients === 1){
 
-        // CPU_LOAD_INTERVAL = setInterval(function(){
-        //     io.sockets.emit('cpu-load', cpuLoad.getLoad());
-        // }, 500)
+        //CPU LOAD
+        CPU_LOAD_INTERVAL = setInterval(function(){
+            io.sockets.emit('cpu-load', cpuLoad.getLoad());
+        }, 1000);
+        // /CPU LOAD
+
+
+        //SYSINFO
         SYS_INFO_INTERVAL = setInterval(function(){
-            io.sockets.emit('overall-info', sysInfo.getInfo());
-        }, 1000)
+            sysInfo.getInfo(function(data){
+
+                io.sockets.emit('overall-info', data);
+
+            })
+        }, 5000);
+        sysInfo.getInfo(function(data){
+
+            io.sockets.emit('overall-info', data);
+
+        })
+        // /SYSINFO
 
     }
 

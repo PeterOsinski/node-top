@@ -2,40 +2,47 @@ var os 		= require('os');
 var sys 	= require('sys');
 var exec	= require('child_process').exec;
 var _ = require('underscore');
+var async = require('async');
 
-exports.getInfo = function(){
-        /*
-			A better indicator is the load average, if I simplify, it is the amount of waiting tasks because of insufficient resources.
-			You can access it in the uptime command, for example: 13:05:31 up 6 days, 22:54,  5 users,  load average: 0.01, 0.04, 0.06. 
-			The 3 numbers at the end are the load averages for the last minute, the last 5 minutes and the last 15 minutes. 
-			If it reaches 1.00, (no matter of the number of cores) it is that something it waiting.
-		*/
-	exec("free -m | tail -n 3", function(error, stdout, stderr) {
+exports.getInfo = function(callback){
+     
 
-        var data = stdout.split("\n");
+    async.parallel({
+    	sys: function(cb){
+    		/*
+				A better indicator is the load average, if I simplify, it is the amount of waiting tasks because of insufficient resources.
+				You can access it in the uptime command, for example: 13:05:31 up 6 days, 22:54,  5 users,  load average: 0.01, 0.04, 0.06. 
+				The 3 numbers at the end are the load averages for the last minute, the last 5 minutes and the last 15 minutes. 
+				If it reaches 1.00, (no matter of the number of cores) it is that something it waiting.
+			*/
+    		cb(null, {
+    			'loadavg': os.loadavg().map(function(val){
+					return val.toFixed(2);
+				}),
+				'uptime': Math.round(os.uptime()),
+				'platform': os.platform()
+    		})
 
-        //total, used, free
-        var mem = data[0].match(/[0-9]{1,}/gi).slice(0,3);
+    	},
+    	mem: function(cb){
 
-        var cache_buff = data[1].match(/[0-9]{1,}/gi).slice(0,3);
-        //cache buff has no 'total' value
-        cache_buff.unshift(0);
+    		execFree(function(data){
 
-        var swap = data[2].match(/[0-9]{1,}/gi).slice(0,3);
+    			cb(null, data);
 
-        console.log(mem,cache_buff,swap);
-    });
+    		})
 
-	return {
-		'loadavg': os.loadavg(),
-		'uptime': os.uptime(),
-		'freemem': os.freemem(),
-		'totalmem': os.totalmem(),
-		'platform': os.platform()
-	};
-
+    	}
+	}, function(err, results){
+		callback(results);
+	});
 }
 
+var execDf = function(cb){
+	//df -h
+}
+
+var execFree = function(cb){
 
 /*
 
@@ -53,3 +60,26 @@ exports.getInfo = function(){
 	free -m
 
  */
+
+	exec("free -m | tail -n 3", function(error, stdout, stderr) {
+
+        var data = stdout.split("\n");
+
+        //structure: total, used, free
+        var mem = data[0].match(/[0-9]{1,}/gi).slice(0,3);
+
+        var cache_buff = data[1].match(/[0-9]{1,}/gi).slice(0,3);
+        //cache buff has no 'total' value
+        cache_buff.unshift(0);
+
+        var swap = data[2].match(/[0-9]{1,}/gi).slice(0,3);
+
+        //all values in megabytes
+        cb({
+        	mem: mem,
+        	cachebuff: cache_buff,
+        	swap: swap
+        });
+    });
+}
+
