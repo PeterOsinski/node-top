@@ -56,31 +56,22 @@ exports.getInfo = function(callback){
 	});
 }
 
-var execDf = function(cb){
+var execDf = function(data){
 
-	exec('df -h', function(error, stdout, stderr){
+	var data = data.split("\n");
+	data.shift();
 
-		var data = stdout.split("\n");
-		data.shift();
-		cb(data);
-
-	})
+	return data;
 
 }
 
-var execPs = function(cb){
+var execPs = function(data){
 	
-	var cmd = 'ps -eo pcpu,pmem,user,pid,command,start,time --sort %cpu | tail -n 10';
-	exec(cmd, function(error, stdout, stderr) {
-
-		//mem, cpu, user, pid, command, start, time
-		cb(stdout.split("\n").reverse());
-
-	});
+	return data.split("\n").reverse();
 
 }
 
-var execFree = function(cb){
+exports.parseMem = function(data){
 
 /*
 
@@ -99,25 +90,22 @@ var execFree = function(cb){
 
  */
 
-	exec("free -m | tail -n 3", function(error, stdout, stderr) {
+	var data = data.split("\n");
 
-        var data = stdout.split("\n");
+    // //structure: total, used, free
+    var mem = data[0].match(/[0-9]{1,}/gi).slice(0,3);
 
-        // //structure: total, used, free
-        var mem = data[0].match(/[0-9]{1,}/gi).slice(0,3);
+    var cache_buff = data[1].match(/[0-9]{1,}/gi).slice(0,3);
+    // //cache buff has no 'total' value
+    cache_buff.unshift(0);
 
-        var cache_buff = data[1].match(/[0-9]{1,}/gi).slice(0,3);
-        // //cache buff has no 'total' value
-        cache_buff.unshift(0);
+    var swap = data[2].match(/[0-9]{1,}/gi).slice(0,3);
 
-        var swap = data[2].match(/[0-9]{1,}/gi).slice(0,3);
-
-        //all values in megabytes
-        cb({
-        	mem: mem,
-        	cachebuff: cache_buff,
-        	swap: swap
-        });
-    });
+    //all values in megabytes
+    return {
+    	mem: mem,
+    	cachebuff: cache_buff,
+    	swap: swap
+    }
 }
 

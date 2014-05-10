@@ -1,15 +1,8 @@
-var os 			= require('os');
 var _ 			= require('underscore');
-var sys 		= require('sys');
-var exec 		= require('child_process').exec;
-
-var cpusLen 	= os.cpus().length;
 var usageBuffer = [];
 
 var parseProcStat = function(data){
-	var cpus = os.cpus();
-	var cores = data.split("\n").slice(0, cpus.length + 1);
-	var avg = cores.shift();
+	var cores = data.split("\n");
 
 	var coreUsages = {};
 
@@ -43,9 +36,8 @@ var showCpuUsage = function(){
 		usageBuffer.shift();
 
 		var usage = [];
-		var cpus = os.cpus();
 
-		_(cpusLen).times(function(core){
+		_(_.keys(usageBuffer[0]).length).times(function(core){
 
 			// http://stackoverflow.com/questions/3017162/how-to-get-total-cpu-usage-in-linux-c/3017438#3017438
 			var work_over_period = usageBuffer[1][core]['work'] - usageBuffer[0][core]['work'];
@@ -54,23 +46,16 @@ var showCpuUsage = function(){
 
 			var cpu = work_over_period / total_over_period * 100;
 
-			usage.push({
-				load: parseFloat(cpu).toFixed(1),
-				speed: cpus[core].speed
-			});
+			usage.push(parseFloat(cpu).toFixed(1));
 		})
 
 		return usage;
 	}
 }
 
-exports.getLoad = function() {
+exports.parseLoad = function(data) {
 
-	exec("cat /proc/stat", function(error, stdout, stderr) {
-
-        parseProcStat(stdout);
-
-    });
+    parseProcStat(data);
 
     return showCpuUsage();
 }

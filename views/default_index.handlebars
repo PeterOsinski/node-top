@@ -1,38 +1,30 @@
 
-  {{#each cpus}}
-    {{model}}, speed: <span class="js-core" id="core_{{@index}}_speed"></span>mhz
-    <br/>
-  {{/each}}
     <canvas class="js-core-load" id="core_load" width="1000px" height="100"></canvas>
-
-
 
     <script>
 
-      var opts = {maxValue: 100, minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}};
+      var opts = {maxValue: 100, minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}},
+          chart = new SmoothieChart(opts),
+          colors = [
+            'F57900', 'CC0000','4E9A06','204A87'
+          ],
+          loads = {};
 
-      window['CORE_CHART'] = new SmoothieChart(opts);
-      window['CORE_CHART'].streamTo($('#core_load')[0], 1000);
-
-      var colors = [
-        'F57900', 'CC0000','4E9A06','204A87'
-      ];
-
-      $('.js-core').each(function(key, el){
-
-        window['CORE_LOAD_'+key] = new TimeSeries();
-
-        window['CORE_CHART'].addTimeSeries(window['CORE_LOAD_'+key], {lineWidth:2,strokeStyle:'#'+colors[key]});
-
-      });
+      chart.streamTo($('#core_load')[0], 1000);
 
       socket.on('cpu-load', function (data) {
 
         _.each(data, function(core, key){
 
-          $('#core_'+key+'_speed').text(core.speed);
+          if(!loads[key]){
+            loads[key] = new TimeSeries();
 
-          window['CORE_LOAD_'+key].append(new Date().getTime(), core.load);
+            chart.addTimeSeries(loads[key], {lineWidth:2,strokeStyle:'#'+colors[key]});
+          }
+
+          if(loads[key]){
+            loads[key].append(new Date().getTime(), core);
+          }
 
         })
       });

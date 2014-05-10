@@ -13,6 +13,7 @@ var secure = function(req, res, next){
 module.exports = function(app){
 
 	app.get('/', defaultController.index);
+	app.all('/endpoint', defaultController.endpoint);
 
 }
 
