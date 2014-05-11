@@ -1,47 +1,95 @@
 
+    <span class="js-load"></span>
+    <span class="js-loadavg"></span>
+    <span class="js-cputemp"></span>
+
     <canvas class="js-core-load" id="core_load" width="1000px" height="100"></canvas>
+
+    <br/><span class="js-ifconfig-bandwith"></span>
+
+    Network interfaces in:<br/>
+    <canvas class="js-ifconfig" id="ifconfig_in" width="1000px" height="50"></canvas>
+
+    <br/>Network interfaces out:<br/>
+    <canvas class="js-ifconfig" id="ifconfig_out" width="1000px" height="50"></canvas>
 
     <script>
 
-      var opts = {maxValue: 100, minValue:0, millisPerPixel:80,grid:{strokeStyle:'transparent'}, labels:{disabled:true}},
-          chart = new SmoothieChart(opts),
+      var opts = {maxValue: 100, minValue:0, millisPerPixel:160,grid:{strokeStyle:'transparent'}, labels:{disabled:true}},
+          optsIfconfig = {millisPerPixel:80,grid:{strokeStyle:'transparent'}},
+          loadChart = new SmoothieChart(opts),
+          ifconfigChartIn = new SmoothieChart(optsIfconfig),
+          ifconfigChartOut = new SmoothieChart(optsIfconfig),
           colors = [
             'F57900', 'CC0000','4E9A06','204A87'
           ],
-          loads = {};
+          loads = {}, bandwithIn = {}, bandwithOut = {};
 
-      chart.streamTo($('#core_load')[0], 1000);
+      loadChart.streamTo($('#core_load')[0], 2000);
+      ifconfigChartIn.streamTo($('#ifconfig_in')[0], 1000);
+      ifconfigChartOut.streamTo($('#ifconfig_out')[0], 1000);
 
-      socket.on('cpu-load', function (data) {
+      socket.on('payload', function (data) {
 
-        _.each(data, function(core, key){
+        if(data.loadavg){
+          $('.js-loadavg').html('<p>Loadavg: '+data.loadavg.substr(0, data.loadavg.indexOf('/')-2)+'</p>');
+        }
 
-          if(!loads[key]){
-            loads[key] = new TimeSeries();
+        if(data.cputemp){
+          $('.js-cputemp').html('<p>CPU temp: '+data.cputemp+'°C</p>');
+        }
 
-            chart.addTimeSeries(loads[key], {lineWidth:2,strokeStyle:'#'+colors[key]});
-          }
+        if(data.load){
 
-          if(loads[key]){
-            loads[key].append(new Date().getTime(), core);
-          }
+          $('.js-load').html('<p>Load for each core: '+data.load.join('% ')+'%</p>');
 
-        })
+          _.each(data.load, function(core, key){
+
+            if(!loads[key]){
+              loads[key] = new TimeSeries();
+
+              loadChart.addTimeSeries(loads[key], {lineWidth:2,strokeStyle:'#'+colors[key]});
+            }
+
+            if(loads[key]){
+              loads[key].append(new Date().getTime(), core);
+            }
+
+          })
+        }
+
+        if(data.ifconfig){
+
+          $('.js-ifconfig-bandwith').html('');
+
+          _.each(data.ifconfig, function(b, key){
+
+            if(!bandwithOut[key]){
+              bandwithOut[key] = new TimeSeries();
+              ifconfigChartOut.addTimeSeries(bandwithOut[key], {lineWidth:2,strokeStyle:'#'+colors[key]});
+            }
+
+            if(!bandwithIn[key]){
+              bandwithIn[key] = new TimeSeries();
+              ifconfigChartIn.addTimeSeries(bandwithIn[key], {lineWidth:2,strokeStyle:'#'+colors[key]});
+            }
+
+            if(bandwithOut[key]){
+              bandwithOut[key].append(new Date().getTime(), b.o);
+            }
+
+            if(bandwithIn[key]){
+              bandwithIn[key].append(new Date().getTime(), b.i);
+            }
+
+            $('.js-ifconfig-bandwith').append('<p style="color:#'+colors[key]+'">'+b.n+' in: '+b.i+'kb/s, out: '+b.o+'kb/s<p>')
+
+          })
+        }
       });
     </script>
 
-
-
     <br/>
-    <br/>
-    <br/>
-    Average load:<span class="js-loadavg"></span><br/>
-    <br/>
-    Disk space: <span class="js-mem"></span>
-    <br>
-    Processes:<br/>
-    <span class="js-ps"></span>
-    <br/><br/>
     <div id="js-mem-mem" style="width:200px; height:200px; float:left;"></div>
     <div id="js-mem-ram-only" style="width:200px; height:200px; float:left;"></div>
     <div id="js-mem-cache" style="width:200px; height:200px; float:left;"></div>
@@ -51,7 +99,12 @@
 <script>
 
     var memMem, memRamOnly, memSwap, memCache = false;
-    socket.on('overall-info', function (data) {
+    socket.on('payload', function (data) {
+
+      if(!data.mem){
+        return;
+      }
+
       if(!memMem){
         memMem = new JustGage({
           id: "js-mem-mem", 
@@ -100,10 +153,6 @@
       memCache.refresh(data.mem.cachebuff[1]);
       memSwap.refresh(data.mem.swap[1]);
       memMem.refresh(data.mem.mem[1]);
-
-      $('.js-loadavg').text(data.sys.loadavg.join(' '));
-      $('.js-mem').html(data.df.join('<br/>'));
-      $('.js-ps').html(data.ps.join('<br/>'));
 
     });
 

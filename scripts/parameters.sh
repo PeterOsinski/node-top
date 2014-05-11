@@ -1,5 +1,3 @@
-#short for: reload parameter 'mem'
-
 function P_LOADAVG {
 	echo "loadavg=$(cat /proc/loadavg)";
 }
@@ -34,4 +32,8 @@ function P_UPTIME {
 
 function P_IFCONFIG {
 	echo "ifconfig=$(ifconfig | grep 'Link encap\|RX bytes')";
+}
+
+function P_CPUTEMP {
+	echo "cputemp=$(($(cat /sys/class/thermal/thermal_zone0/temp)/1000))";
 }
