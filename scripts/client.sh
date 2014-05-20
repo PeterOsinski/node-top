@@ -4,7 +4,7 @@
 APP_KEY='1c3e8fa';
 
 #host with the collecting server
-REQUEST_URL='http://localhost:4000/endpoint';
+REQUEST_URL='https://localhost:4000/endpoint';
 
 #file with necessary functions
 source './parameters.sh';
