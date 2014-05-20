@@ -4,7 +4,7 @@
 APP_KEY='1c3e8fa';
 
 #host with the collecting server
-REQUEST_URL='https://127.0.0.1:4000/endpoint';
+REQUEST_URL='http://127.0.0.1:4000/endpoint';
 
 #file with necessary functions
 source './parameters.sh';
@@ -20,7 +20,6 @@ function SEND_REQUEST {
 
 	wget -qO- \
 	$REQUEST_URL \
-	--no-check-certificate \
 	--post-data="$STRING" \
 	&> /dev/null;
 

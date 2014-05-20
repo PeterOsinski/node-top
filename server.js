@@ -23,5 +23,7 @@ app.use(bodyParser());
  
 require('./routes.js')(app);
 
-
-https.createServer(options, app).listen(4000);
+app.listen(4000, function(){
+    console.log('Server running...');
+});
+// https.createServer(options, app).listen(4000);
