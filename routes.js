@@ -1,6 +1,6 @@
 
 var defaultController = require('./controller/default.js');
-
+var express = require('express');
 var auth = express.basicAuth(function(user, pass) {     
    return (user == "pi" && pass == "adminadminadmin");
 },'secret');
