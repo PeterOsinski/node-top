@@ -20,6 +20,7 @@ function SEND_REQUEST {
 
 	wget -qO- \
 	$REQUEST_URL \
+	--no-check-certificate \
 	--post-data="$STRING" \
 	&> /dev/null;
 
