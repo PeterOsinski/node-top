@@ -7,7 +7,8 @@ APP_KEY='1c3e8fa';
 REQUEST_URL='http://127.0.0.1:4000/endpoint';
 
 #file with necessary functions
-source './parameters.sh';
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
+source "$DIR/parameters.sh";
 
 function SEND_REQUEST {
 
