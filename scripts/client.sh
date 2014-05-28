@@ -1,14 +1,9 @@
 #!/bin/bash
 
-#app key
-APP_KEY='1c3e8fa';
-
-#host with the collecting server
-REQUEST_URL='http://127.0.0.1:4000/endpoint';
-
-#file with necessary functions
+#file with necessary functions and config values
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )";
-source "$DIR/parameters.sh";
+source "$DIR/polls.sh";
+source "$DIR/config.sh";
 
 function SEND_REQUEST {
 
@@ -41,18 +36,23 @@ while [ true ]; do
 		PARAMS+=("$(P_IFCONFIG)");
 	fi
 
-	if [ $(($POINTER % 2)) -eq 0 ]; then
+	if [ $(($POINTER % 2)) -eq 0 ] || [ $POINTER -eq 0 ]; then
 		PARAMS+=("$(P_MEM)" "$(P_LOAD)");
 	fi
 
 	#execute on every X iteration
-	if [ $(($POINTER % 5)) -eq 0 ]; then
+	if [ $(($POINTER % 5)) -eq 0 ] || [ $POINTER -eq 0 ]; then
 		PARAMS+=("$(P_LOADAVG)" "$(P_CPUTEMP)");
 	fi
 
 	#execute on every X iteration
-	if [ $(($POINTER % 8)) -eq 0 ]; then
+	if [ $(($POINTER % 8)) -eq 0 ] || [ $POINTER -eq 0 ]; then
 		PARAMS+=("$(P_PS)");
+	fi
+
+	#execute on every X iteration
+	if [ $(($POINTER % 20)) -eq 0 ] || [ $POINTER -eq 0 ]; then
+		PARAMS+=("$(P_DF)");
 
 		#the last 'if' should reset the iteration
 		POINTER=0;

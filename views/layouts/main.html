@@ -9,9 +9,9 @@
     <script src="/static/underscore.js"></script>
     <script src="/static/raphael.js"></script>
     <script src="/static/justgage.js"></script>
-    <script src="http://127.0.0.1:4040/socket.io/socket.io.js"></script>
+    <script src="http://{{CONFIG 'host'}}:4040/socket.io/socket.io.js"></script>
 	<script>
-	  var socket = io.connect('http://127.0.0.1:4040');
+	  var socket = io.connect("http://{{CONFIG 'host'}}:4040");
 	  
 	</script>
 </head>

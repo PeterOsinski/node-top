@@ -16,10 +16,22 @@ var options = {
 //resolve config
 var config = require('./config');
 
-console.log(config);
+var requiredValues = ['host'];
 
-app.engine('handlebars', exphbs({defaultLayout: 'main'}));
-app.set('view engine', 'handlebars');
+if(_.difference(requiredValues, _.keys(config)).length > 0){
+	throw new Error('Define all needed config values');
+}
+
+app.engine('html', exphbs({
+	defaultLayout: 'main',
+	extname: '.html',
+	helpers: {
+		CONFIG: function(key){
+			return config[key];
+		}
+	}
+}));
+app.set('view engine', 'html');
 
 app.use('/static', express.static(__dirname + '/static'));
 

@@ -96,6 +96,14 @@
     <div id="js-mem-swap" style="width:200px; height:200px; float:left;"></div>
     <br/><br/>
 
+    <div id="js-df" style="float:left;width:100%">
+    </div>
+
+    <br/><br/><br/>
+
+    <div id="js-ps" style="float:left;width:100%;margin-top:10px">
+    </div>
+
 <script>
 
     var memMem, memRamOnly, memSwap, memCache = false;
@@ -103,6 +111,14 @@
 
       if(!data.mem){
         return;
+      }
+
+      if(data.df){
+        $('#js-df').html(data.df.split("\n").join('<br/>'));
+      }
+
+      if(data.ps){
+        $('#js-ps').html(data.ps.split("\n").join('<br/>'));
       }
 
       if(!memMem){
