@@ -1,4 +1,4 @@
-var io 			= require('socket.io').listen(4040);
+var io 			= require('socket.io').listen(4040, {log: false});
 var cpuLoad     = require('./../parsers/cpu-load.js');
 var sysInfo     = require('./../parsers/sys-info.js');
 var ifconfig    = require('./../parsers/ifconfig.js');
