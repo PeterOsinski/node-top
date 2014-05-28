@@ -149,8 +149,8 @@
         });
       }
 
-      memRamOnly.refresh(data.mem.mem[1] - data.mem.cachebuff[1]);
-      memCache.refresh(data.mem.cachebuff[1]);
+      memRamOnly.refresh(data.mem.cachebuff[1]);
+      memCache.refresh(data.mem.mem[1] - data.mem.cachebuff[1]);
       memSwap.refresh(data.mem.swap[1]);
       memMem.refresh(data.mem.mem[1]);
 
