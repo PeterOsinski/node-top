@@ -22,6 +22,10 @@ function P_CORES {
 	echo "cores=$(cat /proc/cpuinfo | grep 'model name\|cpu MHz')";
 }
 
+function P_DISK {
+	echo "diskstat=$(cat /proc/diskstats | grep sd)"
+}
+
 #processes info
 function P_PS {
 	echo "ps=$(ps -eo pcpu,pmem,user,pid,command,start,time --sort -%cpu | head -n 11)";

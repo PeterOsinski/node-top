@@ -18,7 +18,6 @@ function SEND_REQUEST {
 	$REQUEST_URL \
 	--post-data="$STRING" \
 	&> /dev/null;
-
 }
 
 function GET_TIME {
@@ -37,7 +36,7 @@ while [ true ]; do
 	fi
 
 	if [ $(($POINTER % 2)) -eq 0 ] || [ $POINTER -eq 0 ]; then
-		PARAMS+=("$(P_MEM)" "$(P_LOAD)");
+		PARAMS+=("$(P_MEM)" "$(P_LOAD)" "$(P_DISK)");
 	fi
 
 	#execute on every X iteration

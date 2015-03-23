@@ -3,6 +3,7 @@ var cpuLoad     = require('./../parsers/cpu-load.js');
 var sysInfo     = require('./../parsers/sys-info.js');
 var ifconfig    = require('./../parsers/ifconfig.js');
 var _ 			= require('underscore');
+var debug		= require('debug')('nt:controller')
 
 
 var dataProcessing = {
@@ -25,6 +26,10 @@ var dataProcessing = {
 		return ifconfig.parseIfconfig(d);
 	},
 	cputemp: function(d){
+		return d;
+	},
+	diskstat: function(d){
+		debug(d)
 		return d;
 	}
 }
